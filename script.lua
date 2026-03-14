@@ -2,7 +2,6 @@
 local HoldClick = true
 local Hotkey = "t"
 local HotkeyToggle = true
-local TriggerDelay = 0.2 -- delay before shooting
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -14,7 +13,6 @@ local Mouse = LocalPlayer:GetMouse()
 local Enabled = false
 local RightClickHeld = false
 local CurrentlyPressed = false
-local Waiting = false
 
 Mouse.KeyDown:Connect(function(key)
 	key = key:lower()
@@ -57,27 +55,14 @@ end)
 RunService.RenderStepped:Connect(function()
 	if Enabled and RightClickHeld then
 		if Mouse.Target and Mouse.Target.Parent:FindFirstChild("Humanoid") then
-			
 			if HoldClick then
-				if not CurrentlyPressed and not Waiting then
-					Waiting = true
-					
-					task.spawn(function()
-						task.wait(TriggerDelay)
-
-						if Enabled and RightClickHeld then
-							CurrentlyPressed = true
-							mouse1press()
-						end
-
-						Waiting = false
-					end)
-
+				if not CurrentlyPressed then
+					CurrentlyPressed = true
+					mouse1press()
 				end
 			else
 				mouse1click()
 			end
-
 		else
 			if HoldClick and CurrentlyPressed then
 				CurrentlyPressed = false
