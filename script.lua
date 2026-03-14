@@ -1,18 +1,50 @@
--- Settings
-local HoldClick = true
-local Hotkey = "t"
-local HotkeyToggle = true
-
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 
 local LocalPlayer = Players.LocalPlayer
 local Mouse = LocalPlayer:GetMouse()
 
+local HoldClick = true
+local Hotkey = "t"
+local HotkeyToggle = true
+
 local Enabled = false
 local RightClickHeld = false
-local CurrentlyPressed = false
+local CurrentlyActive = false
+
+local function getCharacterFromTarget(target)
+	if not target then
+		return nil
+	end
+	return target:FindFirstAncestorOfClass("Model")
+end
+
+local function isEnemyCharacter(character)
+	if not character then
+		return false
+	end
+
+	local humanoid = character:FindFirstChildOfClass("Humanoid")
+	if not humanoid then
+		return false
+	end
+
+	local targetPlayer = Players:GetPlayerFromCharacter(character)
+	if not targetPlayer then
+		return false
+	end
+
+	if targetPlayer == LocalPlayer then
+		return false
+	end
+
+	if LocalPlayer.Team ~= nil and targetPlayer.Team ~= nil then
+		return LocalPlayer.Team ~= targetPlayer.Team
+	end
+
+	return true
+end
 
 Mouse.KeyDown:Connect(function(key)
 	key = key:lower()
@@ -20,7 +52,7 @@ Mouse.KeyDown:Connect(function(key)
 	if key == Hotkey:lower() then
 		if HotkeyToggle then
 			Enabled = not Enabled
-			print("Autotrigger:", Enabled and "ON" or "OFF")
+			print("Target system:", Enabled and "ON" or "OFF")
 		else
 			Enabled = true
 		end
@@ -36,43 +68,41 @@ Mouse.KeyUp:Connect(function(key)
 end)
 
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
+	if gameProcessed then
+		return
+	end
+
 	if input.UserInputType == Enum.UserInputType.MouseButton2 then
 		RightClickHeld = true
 	end
 end)
 
-UserInputService.InputEnded:Connect(function(input, gameProcessed)
+UserInputService.InputEnded:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton2 then
 		RightClickHeld = false
-
-		if HoldClick and CurrentlyPressed then
-			CurrentlyPressed = false
-			mouse1release()
-		end
+		CurrentlyActive = false
 	end
 end)
 
 RunService.RenderStepped:Connect(function()
-	if Enabled and RightClickHeld then
-		if Mouse.Target and Mouse.Target.Parent:FindFirstChild("Humanoid") then
-			if HoldClick then
-				if not CurrentlyPressed then
-					CurrentlyPressed = true
-					mouse1press()
-				end
-			else
-				mouse1click()
+	if not Enabled or not RightClickHeld then
+		CurrentlyActive = false
+		return
+	end
+
+	local targetPart = Mouse.Target
+	local character = getCharacterFromTarget(targetPart)
+
+	if character and isEnemyCharacter(character) then
+		if HoldClick then
+			if not CurrentlyActive then
+				CurrentlyActive = true
+				print("Valid enemy target")
 			end
 		else
-			if HoldClick and CurrentlyPressed then
-				CurrentlyPressed = false
-				mouse1release()
-			end
+			print("Clicked enemy target")
 		end
 	else
-		if HoldClick and CurrentlyPressed then
-			CurrentlyPressed = false
-			mouse1release()
-		end
+		CurrentlyActive = false
 	end
 end)
