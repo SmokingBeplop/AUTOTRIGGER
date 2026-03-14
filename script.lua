@@ -3,34 +3,29 @@ local HoldClick = true
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
 
 local LocalPlayer = Players.LocalPlayer
 local Mouse = LocalPlayer:GetMouse()
 
-local Toggle = false
+local Scoped = false
 local CurrentlyPressed = false
 
--- Detect Right Click Hold
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if input.UserInputType == Enum.UserInputType.MouseButton2 then
-        Toggle = true
-    end
+-- Detect right click (scope)
+Mouse.Button2Down:Connect(function()
+    Scoped = true
 end)
 
-UserInputService.InputEnded:Connect(function(input, gameProcessed)
-    if input.UserInputType == Enum.UserInputType.MouseButton2 then
-        Toggle = false
+Mouse.Button2Up:Connect(function()
+    Scoped = false
 
-        if HoldClick and CurrentlyPressed then
-            CurrentlyPressed = false
-            mouse1release()
-        end
+    if HoldClick and CurrentlyPressed then
+        CurrentlyPressed = false
+        mouse1release()
     end
 end)
 
 RunService.RenderStepped:Connect(function()
-    if Toggle then
+    if Scoped then
         if Mouse.Target then
             if Mouse.Target.Parent:FindFirstChild("Humanoid") then
                 if HoldClick then
