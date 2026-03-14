@@ -1,5 +1,5 @@
 # AUTOTRIGGER
 
 ```lua
-loadstring(game:HttpGet("https://raw.githubusercontent.com/aidrianbrillo4-dot/AUTOTRIGGER/main/script.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/SmokingBeplop/AUTOTRIGGER/main/script.lua"))()
 ```
